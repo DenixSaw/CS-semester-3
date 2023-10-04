@@ -104,7 +104,12 @@ internal class Program {
         if (!int.TryParse(Console.ReadLine(), out var deleteIdx))
             deleteIdx = 1;
         
-        disk.RemovePartition(deleteIdx - 1);
+        try {
+            disk.RemovePartition(deleteIdx - 1);
+        } catch (ArgumentException e) {
+            Console.WriteLine("\nОшибка: " + e.Message);
+        }
+        
         if (partitionCount > 1)
             disk.Partitions[0].SystemType = SystemType.None;
         
