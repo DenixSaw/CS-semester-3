@@ -7,7 +7,7 @@ public abstract class Person {
         return Name;
     }
 
-    protected Person(string name) {
+    public Person(string name) {
         Name = name;
     }
 }

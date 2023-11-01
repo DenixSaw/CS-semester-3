@@ -1,13 +1,12 @@
 namespace CS_semester_3.part2; 
 
 public sealed class Official : Person {
-    public Official(string name, string position) : base(name) {
+    public string Position { get; set; }
+    public Official(string position, string name) : base(name) {
         Position = position;
     }
-
-    public string Position { get; set; }
-
+    
     public override string ToString() {
-        return Name + " " + Position;
+        return base.ToString() + " " + Position;
     }
 }

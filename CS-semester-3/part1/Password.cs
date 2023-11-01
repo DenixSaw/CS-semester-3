@@ -7,9 +7,8 @@ public partial class Password {
     private readonly string _password;
     
     public override bool Equals(object? obj) {
-        if (ReferenceEquals(null, obj)) return false;
-        if (ReferenceEquals(this, obj)) return true;
-        return obj.GetType() == GetType() && this == (Password)obj;
+        if (obj is Password p) return _password == p._password;
+        return false;
     }
     
     public override int GetHashCode() {
