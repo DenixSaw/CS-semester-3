@@ -40,7 +40,7 @@ public partial class Password {
     }
     
     public static bool operator !=(Password p1, Password p2) {
-        return p1._password == p2._password;
+        return p1._password != p2._password;
     }
     
     public static Password operator ++(Password _) {

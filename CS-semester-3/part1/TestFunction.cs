@@ -9,7 +9,7 @@ public class TestFunction {
         Console.WriteLine("Равенство 1 и 2 (Equals): " + Equals(x, y));
         Console.WriteLine("Равенство 1 и 3 (Equals): " + Equals(x, z));
         Console.WriteLine("Равенство 1 и 2: " + (x == y));
-        Console.WriteLine("Неравенство 1 и 3: " + (x != y));
+        Console.WriteLine("Неравенство 1 и 3: " + (x != z));
         
         Console.WriteLine("Hash code 1: " + x.GetHashCode());
 
