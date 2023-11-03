@@ -11,6 +11,10 @@ public class Student : Pupil {
         }
     }
 
+    public virtual void PrintName() {
+        Console.WriteLine($"Студент очного отделения {Name}");
+    }
+    
     public override string ToString() {
         return base.ToString() + " " + Year;
     }

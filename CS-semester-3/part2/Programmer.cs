@@ -1,7 +1,7 @@
 namespace CS_semester_3.part2;
 
 public class Programmer : Worker {
-    private const int ProfesstionId = 42;
+    private const int ProfessionId = 42;
     public string Framework { get; set; }
 
     public Programmer(string framework, int salary, string name) : base(salary, name) {
@@ -18,6 +18,6 @@ public class Programmer : Worker {
     }
     
     public override int GetHashCode() {
-        return ProfesstionId.GetHashCode();
+        return ProfessionId.GetHashCode();
     }
 }
