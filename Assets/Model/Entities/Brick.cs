@@ -17,7 +17,7 @@ public class Brick : IBrick {
 
     public string Color { get; set; }
     
-    [CanBeNull] public IEffect Effect { get; set; }
+    public IEffect Effect { get; set; }
 
     public Brick(int health = 1, string color = "#fff", IEffect effect = null) {
         Health = health;
