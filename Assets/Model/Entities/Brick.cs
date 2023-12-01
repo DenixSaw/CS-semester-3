@@ -4,7 +4,7 @@ using JetBrains.Annotations;
 using Model.Effects;
 
 namespace Model.Entities {
-public class Brick {
+public class Brick : IBrick {
     private int _health;
     public int Health {
         get => _health;
