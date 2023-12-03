@@ -1,6 +1,6 @@
-namespace CS_semester_3; 
+namespace CS_semester_3.part1; 
 
-public class TestFunction {
+public abstract class TestFunction {
     public static bool Run() {
         Password x = new("abcd");
         Password y = new("abcd");
@@ -26,12 +26,12 @@ public class TestFunction {
         
         Console.WriteLine(y ? "Пароль 2 сильный" : "Пароль 2 слабый");
 
-        var str = "Abcdefg";
+        const string str = "Abcdefg";
         Console.WriteLine($"\nСтрока {str}:");
         Console.WriteLine($"С выделенной серединой {str.HighlightMiddle()}");
-        Console.WriteLine($"Корректная ли длина пароля: {str.ValidPasswordLength()}");
+        Console.WriteLine($"Корректная ли длина пароля: {new Password(str).ValidPasswordLength()}");
         
-        var shortStr = "abcd";
+        const string shortStr = "abcd";
         Console.WriteLine($"Строка {shortStr}:");
         try {
             Console.WriteLine($"С выделенной серединой {shortStr.HighlightMiddle()}");
@@ -40,7 +40,7 @@ public class TestFunction {
             Console.WriteLine("Ошибка: " + e.Message);
         }
 
-        Console.WriteLine($"Корректная ли длина пароля: {shortStr.ValidPasswordLength()}");
+        Console.WriteLine($"Корректная ли длина пароля: {new Password(shortStr).ValidPasswordLength()}");
         return true;
     }
 }

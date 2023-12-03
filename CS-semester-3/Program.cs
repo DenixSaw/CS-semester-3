@@ -1,8 +1,9 @@
-﻿using CS_semester_3.part2;
+﻿using CS_semester_3.part1;
+using CS_semester_3.part2;
 
 namespace CS_semester_3;
 
-internal class Program {
+internal abstract class Program {
     private static void Main() {
         if (TestFunction.Run()) {
             Console.WriteLine("Первая тестовая функция выполнена успешно\n\n");

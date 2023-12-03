@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 
-namespace CS_semester_3; 
+namespace CS_semester_3.part1; 
 
 
 public partial class Password {
@@ -10,6 +10,8 @@ public partial class Password {
         if (obj is Password p) return _password == p._password;
         return false;
     }
+
+    public int Length => _password.Length;
     
     public override int GetHashCode() {
         return _password.GetHashCode();
