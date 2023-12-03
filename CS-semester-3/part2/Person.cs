@@ -4,7 +4,7 @@ public abstract class Person {
     public string Name { get; }
 
     public override string ToString() {
-        return Name;
+        return "Person: " + Name;
     }
 
     public Person(string name) {

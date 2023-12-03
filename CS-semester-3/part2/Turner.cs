@@ -17,6 +17,6 @@ public class Turner : Worker {
     }
     
     public override string ToString() {
-        return base.ToString() + " " + Experience;
+        return base.ToString() + ", Turner: " + Experience;
     }
 }

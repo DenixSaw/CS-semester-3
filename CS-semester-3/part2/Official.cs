@@ -7,6 +7,6 @@ public sealed class Official : Person {
     }
     
     public override string ToString() {
-        return base.ToString() + " " + Position;
+        return base.ToString() + ", Official: " + Position;
     }
 }

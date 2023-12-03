@@ -16,7 +16,7 @@ public class Student : Pupil {
     }
     
     public override string ToString() {
-        return base.ToString() + " " + Year;
+        return base.ToString() + ", Student: " + Year;
     }
 
     public Student(): base("AVT-213", "default_name") {

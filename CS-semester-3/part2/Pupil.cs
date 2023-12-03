@@ -12,6 +12,6 @@ public class Pupil : Person {
     }
     
     public override string ToString() {
-        return base.ToString() + " " + Group;
+        return base.ToString() + ", Pupil: " + Group;
     }
 }

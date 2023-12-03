@@ -12,7 +12,7 @@ public class Worker : Person {
     }
 
     public override string ToString() {
-        return base.ToString() + " " + Salary;
+        return base.ToString() + ", Worker: " + Salary;
     }
     
     public Worker() : base("default_name") {

@@ -9,7 +9,7 @@ public class Programmer : Worker {
     }
     
     public override string ToString() {
-        return base.ToString() + " " + Framework;
+        return base.ToString() + ", Programmer: " + Framework;
     }
 
     public override bool Equals(object? obj) {

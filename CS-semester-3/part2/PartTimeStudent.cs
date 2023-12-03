@@ -12,6 +12,6 @@ public class PartTimeStudent : Student {
     }
     
     public override string ToString() {
-        return base.ToString() + " " + Login;
+        return base.ToString() + ", PartTimeStudent: " + Login;
     }
 }
