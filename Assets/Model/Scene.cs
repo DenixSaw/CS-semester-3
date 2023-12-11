@@ -29,8 +29,8 @@ public class Scene : IScene {
     
     private ObservableCollection<IBrick> GenerateField() {
         ObservableCollection<IBrick> field = new();
-        for (var i = 0; i < Config.NumbOfLines * Config.NumOfBricks; i++) {
-            field.Add(new Brick(i < Config.NumOfBricks ? 2 : 1, GetColor(i / Config.NumOfBricks), GetEffect()));
+        for (var i = 0; i < 5 * 8; i++) {
+            field.Add(new Brick(i < 5 ? 2 : 1, GetColor(i / 5), GetEffect()));
         }
         return field;
     }
@@ -40,7 +40,7 @@ public class Scene : IScene {
     public Scene() {
         Player = new Player();
         Player.EffectRecieved += ApplyEffect;
-        Ball = new Ball(Config.BallSpeed, Config.BallRadius);
+        Ball = new Ball(1, 1);
         Field = GenerateField();
     }
 }

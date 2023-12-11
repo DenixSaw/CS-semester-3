@@ -1,8 +1,20 @@
+using System.Collections.Generic;
+using Model.Effects;
+
 namespace Model {
-public static class Config {
-    public static int NumOfBricks = 12;
-    public static int NumbOfLines = 5;
-    public static int BallSpeed = 1;
-    public static int BallRadius = 1;
+public class Config : IConfig {
+    public IDictionary<string, float> Effects { get; }
+    public int NumOfBricks { get; }
+    public int NumbOfLines { get; }
+    public int BallSpeed { get; }
+    public int BallRadius { get; }
+
+    public Config(IDictionary<string, float> effects, int numOfBricks, int numbOfLines, int ballSpeed, int  ballRadius) {
+        Effects = effects;
+        NumOfBricks = numOfBricks;
+        NumbOfLines = numbOfLines;
+        BallSpeed = ballSpeed;
+        BallRadius = ballRadius;
+    }
 }
 }
