@@ -3,8 +3,8 @@ using System;
 
 namespace Model.Entities {
 public class Ball : IBall {
-    private int _speed;
-    public int Speed {
+    private float _speed;
+    public float Speed {
         get => _speed;
         set {
             if (value < 1)
@@ -13,17 +13,17 @@ public class Ball : IBall {
         }
     }
 
-    private int _radius;
-    public int Radius {
+    private float _radius;
+    public float Radius {
         get => _radius;
         set {
-            if (value < 1)
+            if (value < 0)
                 throw new Exception("Некорректное значение радиуса");
             _radius = value;
         }
     }
 
-    public Ball(int speed, int radius) {
+    public Ball(float speed, float radius) {
         Speed = speed;
         Radius = radius;
     }

@@ -1,8 +1,6 @@
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using JetBrains.Annotations;
 using Model.Effects;
+using UnityEngine;
 using Random = System.Random;
 
 
@@ -16,11 +14,12 @@ public class EffectFactory : IEffectFactory {
         if (_random.Next(100) > 20) return null;
         var effectChance = _random.Next(100);
         var sortedDict = from entry in _config.Effects orderby entry.Value descending select entry;
+        
         foreach (var effect in sortedDict){
-            if (effect.Value > effectChance) {
+            if (effectChance > effect.Value) {
                 return effect.Key switch {
-                    nameof(BallSpeedUpEffect) => new BallSpeedUpEffect(),
-                    nameof(PlayerSpeedUpEffect) => new PlayerSpeedUpEffect(),
+                    "BallSpeedUpEffect" => new BallSpeedUpEffect(),
+                    "PlayerSpeedUpEffect" => new PlayerSpeedUpEffect(),
                     _ => null
                 };
             }

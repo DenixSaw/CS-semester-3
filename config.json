@@ -1,0 +1,12 @@
+{
+	"Effects": {
+		"BallSpeedUpEffect": 0,
+		"PlayerSpeedUpEffect": 50
+	},
+	"NumOfBricks": 7,
+	"NumOfLines": 5,
+	"BallSpeed": 400,
+	"BallRadius": 0.5,
+	"PlayerWidth": 2.5,
+	"PlayerSpeed": 0.05
+}

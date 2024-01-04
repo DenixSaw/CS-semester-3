@@ -1,25 +1,21 @@
 
 using System;
-using JetBrains.Annotations;
 using Model.Effects;
+using Model.Storage;
+using Newtonsoft.Json;
+using UnityEngine;
 
 namespace Model.Entities {
 public class Brick : IBrick {
-    private int _health;
-    public int Health {
-        get => _health;
-        set {
-            if (value < 0)
-                throw new Exception("Некорректное значение HP");
-            _health = value;
-        }
-    }
+    public int Health { get; set; }
 
-    public string Color { get; set; }
+    [JsonProperty("Color")]
+    [JsonConverter(typeof(ColorConverter))]
+    public Color Color { get; set; }
     
     public IEffect Effect { get; set; }
 
-    public Brick(int health = 1, string color = "#fff", IEffect effect = null) {
+    public Brick(int health = 1, Color color = default, IEffect effect = null) {
         Health = health;
         Color = color;
         Effect = effect;

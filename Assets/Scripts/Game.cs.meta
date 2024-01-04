@@ -3,7 +3,10 @@ guid: 197177fb6b531f141ad83ff61daec2bf
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - playerTemplate: {fileID: 1357809722015684931, guid: f3c0c150d5ec30a488c25a29b8e68dff, type: 3}
+  - ballTemplate: {fileID: 6903454693083651905, guid: 6688f2cffc4510c43aabb6b8704acdb2, type: 3}
+  - brickTemplate: {fileID: 783597281197141342, guid: 024ddc61d7ce6884c99bfec9486dd576, type: 3}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 
