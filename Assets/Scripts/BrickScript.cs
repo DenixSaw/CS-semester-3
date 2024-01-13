@@ -1,6 +1,7 @@
 using Model.Effects;
 using Model.Storage;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class BrickScript : MonoBehaviour {
     public int health;
@@ -28,7 +29,7 @@ public class BrickScript : MonoBehaviour {
         
         if (game.BrickNumber <= 0) {
             Debug.Log("Victory");
-            game.Init();
+            SceneManager.LoadScene(2);
         }
     }
 }

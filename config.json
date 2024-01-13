@@ -4,7 +4,7 @@
 		"PlayerSpeedUpEffect": 50
 	},
 	"NumOfBricks": 7,
-	"NumOfLines": 5,
+	"NumOfLines": 3,
 	"BallSpeed": 400,
 	"BallRadius": 0.5,
 	"PlayerWidth": 2.5,

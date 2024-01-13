@@ -16,15 +16,15 @@ public class Game : MonoBehaviour {
     public List<GameObject?> Field = new();
     public int BrickNumber;
     public List<IBrick> _field;
-    
+
     private IConfig _config;
     private const float SceneWidth = 4f;
     private const float BrickHeight = 0.4f;
-    
+
 
     private void SpawnPlayer() {
         IPlayer playerEntity = new Player(_config.PlayerSpeed, _config.PlayerWidth);
-        var player = Instantiate(playerTemplate, new Vector3(0, -3.6f), Quaternion.identity);
+        var player = Instantiate(playerTemplate, new Vector3(0, -4.5f), Quaternion.identity);
         Player = player;
         player.gameObject.transform.localScale = new Vector3(_config.PlayerWidth, 0.35f, 0);
         player.GetComponent<PlayerScript>().boundary = SceneWidth;
@@ -34,7 +34,7 @@ public class Game : MonoBehaviour {
 
     private void SpawnBall() {
         var ballEntity = new Ball(_config.BallSpeed, _config.BallRadius);
-        var ball = Instantiate(ballTemplate, new Vector3(0, -3.2f), Quaternion.identity);
+        var ball = Instantiate(ballTemplate, new Vector3(0, -4.1f), Quaternion.identity);
         Ball = ball;
         ball.gameObject.transform.localScale = new Vector3(_config.BallRadius, _config.BallRadius, 0);
         ball.GetComponent<BallScript>().Ball = ballEntity;
@@ -45,7 +45,7 @@ public class Game : MonoBehaviour {
         var gap = 0.05f;
         _field = FieldRepository.Get();
         BrickNumber = _field.Count - _field.Count(b => b is null);
-        
+
         var brickWidth = (10f - gap * (_config.NumOfBricks - 1)) / _config.NumOfBricks;
         var factory = new FieldFactory(_config, new EffectFactory(_config));
         if (_field.All(brick => brick == null) || _field.Count == 0) {
@@ -53,8 +53,8 @@ public class Game : MonoBehaviour {
             BrickNumber = _field.Count;
         }
 
-        var startX = -4.35f;
-        var startY = 3.7f;
+        var startX = -5f + brickWidth / 2;
+        var startY = 4.8f;
 
         for (var i = 0; i < _config.NumOfLines; i++) {
             for (var k = 0; k < _config.NumOfBricks; k++) {
@@ -63,8 +63,10 @@ public class Game : MonoBehaviour {
                     startX += brickWidth + gap;
                     continue;
                 }
+
                 var current = _field[i * _config.NumOfBricks + k]!;
-                var brick = Instantiate(brickTemplate, new Vector3(startX, startY), Quaternion.identity);
+                var brick = Instantiate(brickTemplate, new Vector3(startX, startY),
+                    Quaternion.identity);
                 Field.Add(brick);
                 brick.gameObject.transform.localScale = new Vector3(brickWidth, BrickHeight, 0);
                 brick.GetComponent<SpriteRenderer>().color = current.Color;
@@ -72,11 +74,11 @@ public class Game : MonoBehaviour {
                 brick.GetComponent<BrickScript>().idx = i * _config.NumOfBricks + k;
                 brick.GetComponent<BrickScript>().Effect = current.Effect;
                 brick.GetComponent<BrickScript>().game = this;
-                
+
                 startX += brickWidth + gap;
             }
 
-            startX = -4.35f;
+            startX = -5f + brickWidth / 2;
             startY -= BrickHeight + gap;
         }
     }
@@ -93,17 +95,15 @@ public class Game : MonoBehaviour {
 
             FieldRepository.Set(new List<IBrick?>());
         }
+
         SpawnPlayer();
         SpawnBall();
-        if (destroyField)
-            SpawnField();
-    }
-    
-    private void Start() {
-        _config = ConfigRepository.Get();
-        
-        Init();
+        SpawnField();
     }
 
-    
+    private void Start() {
+        _config = ConfigRepository.Get();
+
+        Init(false);
+    }
 }
