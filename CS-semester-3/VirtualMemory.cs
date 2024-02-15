@@ -1,122 +1,134 @@
+using System.Runtime.InteropServices;
+
 namespace CS_semester_3; 
 
 public class VirtualMemory : IDisposable, IAsyncDisposable {
     private const int Offset = 2;
-    private const int BufferSize = 4;
-    private const int BitMapSize = 128;
-    private const int DataSize = BitMapSize * sizeof(int);
-    private const int PageSize = BitMapSize + DataSize;
+    private readonly int _bufferSize;
+    private readonly int _pageLength;
+    private readonly int _pageSize;
+    
     private readonly Stream _fileStream;
     
-    public string Filename { get; set; }
-    public Page[] Buffer { get; }
+    private Page[] Buffer { get; }
     
-    public long Length { get; }
-    public long Size { get; }
+    private long Length { get; }
     
     private void SavePage(Page page) {
-        _fileStream.Position = page.Index * PageSize + Offset - 1;
-
-        using var binaryWriter = new BinaryWriter(_fileStream);
-        foreach (var value in page.BitMap)
-            binaryWriter.Write(value);
-        
-        foreach (var value in page.Data) 
-            binaryWriter.Write(value);
+        _fileStream.Position = page.Index * _pageSize + Offset;
+        _fileStream.Write(page.BitMap, 0, page.BitMap.Length);
+        _fileStream.Write(MemoryMarshal.AsBytes(new ReadOnlySpan<int>(page.Data)));
+        page.IsModified = false;
     }
     
     private long GetPage(long index) {
         if (index >= Length || index < 0)
             throw new IndexOutOfRangeException("Некорректный индекс");
         
-        var pageIndex = index / PageSize;
+        var pageIndex = index / _pageLength;
         
         if (Buffer.Any(page => page.Index == pageIndex)) {
+            Buffer[pageIndex].LastRequest = DateTime.Now;
             return pageIndex;
         }
 
         var oldestPage = Buffer[0];
         var oldestPageIndex = 0;
 
-        for (var i = 1; i < BufferSize; i++) {
-            if (Buffer[i].UpdatedAt >= oldestPage.UpdatedAt) continue;
+        for (var i = 1; i < _bufferSize; i++) {
+            if (Buffer[i].LastRequest >= oldestPage.LastRequest) continue;
             oldestPage = Buffer[i];
             oldestPageIndex = i;
         }
 
-        if (oldestPage.IsModified)
+        if (oldestPage.IsModified) 
             SavePage(oldestPage);
+        
             
-        var bitMap = new byte[BitMapSize];
+        var bitMap = new byte[_pageLength];
+        var dataBytes = new byte[_pageLength * sizeof(int)];
+        
+        _fileStream.Position = pageIndex * _pageSize + Offset;
+        
+        _fileStream.ReadExactly(bitMap);
+        _fileStream.ReadExactly(dataBytes);
 
-        const int dataLength = DataSize / sizeof(int);
-        var data = new int[dataLength];
+        var data = MemoryMarshal.Cast<byte, int>(dataBytes).ToArray();
         
-        _fileStream.Position = index * PageSize + Offset - 1;
-        using var binaryReader = new BinaryReader(_fileStream);
-        
-        for (var i = 0; i < BitMapSize; i++) 
-            bitMap[i] = binaryReader.ReadByte();
-        
-        for (var i = 0; i < dataLength; i++) 
-            data[i] = binaryReader.ReadInt32();
-
         Buffer[oldestPageIndex] = new Page(pageIndex, bitMap, data);
         return oldestPageIndex;
     }
     
     public bool GetElement(int index, out int result) {
         var idx = GetPage(index);
-
-        if (Buffer[idx].BitMap[index % BitMapSize] != 1)
+        
+        if (Buffer[idx].BitMap[index % _pageLength] != 1)
             throw new NullReferenceException("Элемент не существует");
         
-        result = Buffer[idx].Data[index % BitMapSize];
+        result = Buffer[idx].Data[index % _pageLength];
         return true;
     }
     
     public bool SetElement(int index, int item) {
-        var idx = GetPage(index);
-        Buffer[idx].BitMap[index % BitMapSize] = 1;
-        Buffer[idx].Data[index % BitMapSize] = item;
+        var bufferIdx = GetPage(index);
+        
+        Buffer[bufferIdx].BitMap[index % _pageLength] = 1;
+        Buffer[bufferIdx].Data[index % _pageLength] = item;
+        Buffer[bufferIdx].IsModified = true;
+        
         return true;
     }
     
-    public VirtualMemory(long length, string filename = "./data.bin") {
-        Filename = filename;
+    public VirtualMemory(long length, string filename = "./data.bin", int bufferSize = 4, int pageLength = 128) {
         Length = length;
-        Size = length * sizeof(int) + Offset;
-        
-        _fileStream = File.Open(filename, FileMode.Create, FileAccess.ReadWrite);
+        _bufferSize = bufferSize;
+        _pageLength = pageLength;
+        _pageSize = pageLength + pageLength * sizeof(int);
+
+        var pageCount = (long)Math.Ceiling((decimal)Length / _pageLength);
+        var size = pageCount * _pageSize + Offset;
         
         if (!File.Exists(filename)) {
-            using StreamWriter writer = new(_fileStream);
-        
-            writer.Write('V');
-            writer.Write('M');
+            _fileStream = File.Open(filename, FileMode.Create, FileAccess.ReadWrite);
+            _fileStream.Write(new []{ (byte)'V'} );
+            _fileStream.Write(new []{ (byte)'M'} );
 
-            Size += PageSize - Size % PageSize;
-            for (long i = 0; i < Size; i++)
-                writer.Write('\0');
+            var empty = new byte[size];
+            for (var i = 0; i < size; i++)
+                empty[i] = 0;
+            
+            _fileStream.Write(empty);
         }
-
-        Buffer = new Page[BufferSize];
-
-        for (var i = 0; i < BufferSize; i++) 
-            GetElement(i * PageSize, out _);
+        else {
+            _fileStream = File.Open(filename, FileMode.Open, FileAccess.ReadWrite);
+        }
+        
+        
+        var temp = new Page(pageCount, Array.Empty<byte>(), Array.Empty<int>()) { LastRequest = new DateTime(0) };
+        Buffer = Enumerable.Repeat(temp, _bufferSize).ToArray();
+        
+        for (var i = 0; i < _bufferSize; i++) {
+            GetPage(i * _pageLength);
+        }
     }
 
+    public void SaveAll() {
+        foreach (var page in Buffer) {
+            if (page.IsModified) {
+                SavePage(page);
+            }
+        }
+    }
+    
     public void Dispose() {
-        foreach (var page in Buffer) 
-            SavePage(page);
+        SaveAll();
         
         _fileStream.Dispose();
         GC.SuppressFinalize(this);
     }
 
     public async ValueTask DisposeAsync() {
-        foreach (var page in Buffer) 
-            SavePage(page);
+        SaveAll();
 
         await _fileStream.DisposeAsync();
         GC.SuppressFinalize(this);

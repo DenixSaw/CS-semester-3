@@ -2,8 +2,8 @@ namespace CS_semester_3;
 
 public class Page {
     public long Index { get; }
-    public bool IsModified { get; set; } = false;
-    public DateTime UpdatedAt { get; set; } = DateTime.Now;
+    public bool IsModified { get; set; }
+    public DateTime LastRequest { get; set; } = DateTime.Now;
     public byte[] BitMap { get; }
     public  int[] Data { get; }
 
