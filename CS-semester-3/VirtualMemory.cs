@@ -21,60 +21,75 @@ public class VirtualMemory : IDisposable, IAsyncDisposable {
         page.IsModified = false;
     }
     
-    private long GetPage(long index) {
+    private long? GetBufferPageIndex(long index) {
         if (index >= Length || index < 0)
-            throw new IndexOutOfRangeException("Некорректный индекс");
-        
-        var pageIndex = index / _pageLength;
-        
-        if (Buffer.Any(page => page.Index == pageIndex)) {
-            Buffer[pageIndex].LastRequest = DateTime.Now;
-            return pageIndex;
+            return null;
+
+        try {
+            var pageIndex = index / _pageLength;
+
+            if (Buffer.Any(page => page.Index == pageIndex)) {
+                Buffer[pageIndex].LastRequest = DateTime.Now;
+                return pageIndex;
+            }
+
+            var oldestPage = Buffer[0];
+            var oldestPageIndex = 0;
+
+            for (var i = 1; i < _bufferSize; i++) {
+                if (Buffer[i].LastRequest >= oldestPage.LastRequest) continue;
+                oldestPage = Buffer[i];
+                oldestPageIndex = i;
+            }
+
+            if (oldestPage.IsModified) 
+                SavePage(oldestPage);
+
+
+            var bitMap = new byte[_pageLength];
+            var dataBytes = new byte[_pageLength * sizeof(int)];
+
+            _fileStream.Position = pageIndex * _pageSize + Offset;
+
+            _fileStream.ReadExactly(bitMap);
+            _fileStream.ReadExactly(dataBytes);
+
+            var data = MemoryMarshal.Cast<byte, int>(dataBytes).ToArray();
+
+            Buffer[oldestPageIndex] = new Page(pageIndex, bitMap, data);
+            return oldestPageIndex;
         }
-
-        var oldestPage = Buffer[0];
-        var oldestPageIndex = 0;
-
-        for (var i = 1; i < _bufferSize; i++) {
-            if (Buffer[i].LastRequest >= oldestPage.LastRequest) continue;
-            oldestPage = Buffer[i];
-            oldestPageIndex = i;
+        catch (Exception e) {
+            Console.WriteLine(e.Message);
+            return null;
         }
-
-        if (oldestPage.IsModified) 
-            SavePage(oldestPage);
         
-            
-        var bitMap = new byte[_pageLength];
-        var dataBytes = new byte[_pageLength * sizeof(int)];
-        
-        _fileStream.Position = pageIndex * _pageSize + Offset;
-        
-        _fileStream.ReadExactly(bitMap);
-        _fileStream.ReadExactly(dataBytes);
-
-        var data = MemoryMarshal.Cast<byte, int>(dataBytes).ToArray();
-        
-        Buffer[oldestPageIndex] = new Page(pageIndex, bitMap, data);
-        return oldestPageIndex;
     }
     
     public bool GetElement(int index, out int result) {
-        var idx = GetPage(index);
+        var pageIdx = GetBufferPageIndex(index) ?? -1;
+
+        result = 0;
         
-        if (Buffer[idx].BitMap[index % _pageLength] != 1)
-            throw new NullReferenceException("Элемент не существует");
+        if (pageIdx == -1) 
+            return false;
+
+        if (Buffer[pageIdx].BitMap[index % _pageLength] != 1)
+            return false;
         
-        result = Buffer[idx].Data[index % _pageLength];
+        result = Buffer[pageIdx].Data[index % _pageLength];
         return true;
     }
     
     public bool SetElement(int index, int item) {
-        var bufferIdx = GetPage(index);
+        var pageIdx = GetBufferPageIndex(index) ?? -1;
+
+        if (pageIdx == -1)
+            return false;
         
-        Buffer[bufferIdx].BitMap[index % _pageLength] = 1;
-        Buffer[bufferIdx].Data[index % _pageLength] = item;
-        Buffer[bufferIdx].IsModified = true;
+        Buffer[pageIdx].BitMap[index % _pageLength] = 1;
+        Buffer[pageIdx].Data[index % _pageLength] = item;
+        Buffer[pageIdx].IsModified = true;
         
         return true;
     }
@@ -90,8 +105,7 @@ public class VirtualMemory : IDisposable, IAsyncDisposable {
         
         if (!File.Exists(filename)) {
             _fileStream = File.Open(filename, FileMode.Create, FileAccess.ReadWrite);
-            _fileStream.Write(new []{ (byte)'V'} );
-            _fileStream.Write(new []{ (byte)'M'} );
+            _fileStream.Write("VM"u8 );
 
             var empty = new byte[size];
             for (var i = 0; i < size; i++)
@@ -108,11 +122,11 @@ public class VirtualMemory : IDisposable, IAsyncDisposable {
         Buffer = Enumerable.Repeat(temp, _bufferSize).ToArray();
         
         for (var i = 0; i < _bufferSize; i++) {
-            GetPage(i * _pageLength);
+            GetBufferPageIndex(i * _pageLength);
         }
     }
 
-    public void SaveAll() {
+    private void SaveAll() {
         foreach (var page in Buffer) {
             if (page.IsModified) {
                 SavePage(page);
