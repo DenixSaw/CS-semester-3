@@ -1,7 +1,9 @@
 ﻿namespace CS_semester_3;
 
-internal static class Program {
-    private static void Main() {
+internal static class Program 
+{
+    private static void Main() 
+    {
         using var vm = new VirtualMemory(21, "./data.bin", 4, 4);
         
         if (!vm.SetElement(4, 42))

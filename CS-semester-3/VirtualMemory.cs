@@ -2,7 +2,8 @@ using System.Runtime.InteropServices;
 
 namespace CS_semester_3; 
 
-public class VirtualMemory : IDisposable, IAsyncDisposable {
+public class VirtualMemory : IDisposable, IAsyncDisposable 
+{
     private const int Offset = 2;
     private readonly int _bufferSize;
     private readonly int _pageLength;
@@ -14,29 +15,33 @@ public class VirtualMemory : IDisposable, IAsyncDisposable {
     
     private long Length { get; }
     
-    private void SavePage(Page page) {
+    private void SavePage(Page page) 
+    {
         _fileStream.Position = page.Index * _pageSize + Offset;
         _fileStream.Write(page.BitMap, 0, page.BitMap.Length);
         _fileStream.Write(MemoryMarshal.AsBytes(new ReadOnlySpan<int>(page.Data)));
         page.IsModified = false;
     }
     
-    private long? GetBufferPageIndex(long index) {
-        if (index >= Length || index < 0)
+    private long? GetBufferPageIndex(long index) 
+    {
+        if ((index >= Length) || (index < 0))
             return null;
 
-        try {
+        try 
+        {
             var pageIndex = index / _pageLength;
 
-            if (Buffer.Any(page => page.Index == pageIndex)) {
-                Buffer[pageIndex].LastRequest = DateTime.Now;
+            if (Buffer.Any(page => page.Index == pageIndex)) 
+            {
                 return pageIndex;
             }
 
             var oldestPage = Buffer[0];
             var oldestPageIndex = 0;
 
-            for (var i = 1; i < _bufferSize; i++) {
+            for (var i = 1; i < _bufferSize; i++) 
+            {
                 if (Buffer[i].LastRequest >= oldestPage.LastRequest) continue;
                 oldestPage = Buffer[i];
                 oldestPageIndex = i;
@@ -59,14 +64,16 @@ public class VirtualMemory : IDisposable, IAsyncDisposable {
             Buffer[oldestPageIndex] = new Page(pageIndex, bitMap, data);
             return oldestPageIndex;
         }
-        catch (Exception e) {
+        catch (Exception e) 
+        {
             Console.WriteLine(e.Message);
             return null;
         }
         
     }
     
-    public bool GetElement(int index, out int result) {
+    public bool GetElement(int index, out int result) 
+    {
         var pageIdx = GetBufferPageIndex(index) ?? -1;
 
         result = 0;
@@ -81,7 +88,8 @@ public class VirtualMemory : IDisposable, IAsyncDisposable {
         return true;
     }
     
-    public bool SetElement(int index, int item) {
+    public bool SetElement(int index, int item) 
+    {
         var pageIdx = GetBufferPageIndex(index) ?? -1;
 
         if (pageIdx == -1)
@@ -94,7 +102,8 @@ public class VirtualMemory : IDisposable, IAsyncDisposable {
         return true;
     }
     
-    public VirtualMemory(long length, string filename = "./data.bin", int bufferSize = 4, int pageLength = 128) {
+    public VirtualMemory(long length, string filename = "./data.bin", int bufferSize = 4, int pageLength = 128) 
+    {
         Length = length;
         _bufferSize = bufferSize;
         _pageLength = pageLength;
@@ -103,49 +112,52 @@ public class VirtualMemory : IDisposable, IAsyncDisposable {
         var pageCount = (long)Math.Ceiling((decimal)Length / _pageLength);
         var size = pageCount * _pageSize;
         
-        if (!File.Exists(filename)) {
+        if (!File.Exists(filename)) 
+        {
             _fileStream = File.Open(filename, FileMode.Create, FileAccess.ReadWrite);
             _fileStream.Write("VM"u8 );
 
             var empty = new byte[size];
             _fileStream.Write(empty);
         }
-        else {
+        else 
             _fileStream = File.Open(filename, FileMode.Open, FileAccess.ReadWrite);
-        }
-        
         
         var temp = new Page(pageCount, Array.Empty<byte>(), Array.Empty<int>()) { LastRequest = new DateTime(0) };
         Buffer = Enumerable.Repeat(temp, _bufferSize).ToArray();
         
-        for (var i = 0; i < _bufferSize; i++) {
+        for (var i = 0; i < _bufferSize; i++) 
             GetBufferPageIndex(i * _pageLength);
-        }
     }
 
-    private void SaveAll() {
-        foreach (var page in Buffer) {
+    private void SaveAll() 
+    {
+        foreach (var page in Buffer) 
+        {
             if (page.IsModified) {
                 SavePage(page);
             }
         }
     }
     
-    public void Dispose() {
+    public void Dispose() 
+    {
         SaveAll();
         
         _fileStream.Dispose();
         GC.SuppressFinalize(this);
     }
 
-    public async ValueTask DisposeAsync() {
+    public async ValueTask DisposeAsync() 
+    {
         SaveAll();
 
         await _fileStream.DisposeAsync();
         GC.SuppressFinalize(this);
     }
 
-    ~VirtualMemory() {
+    ~VirtualMemory() 
+    {
         _fileStream.Dispose();
     }
 }
