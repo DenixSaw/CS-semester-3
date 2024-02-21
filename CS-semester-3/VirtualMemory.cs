@@ -101,16 +101,13 @@ public class VirtualMemory : IDisposable, IAsyncDisposable {
         _pageSize = pageLength + pageLength * sizeof(int);
 
         var pageCount = (long)Math.Ceiling((decimal)Length / _pageLength);
-        var size = pageCount * _pageSize + Offset;
+        var size = pageCount * _pageSize;
         
         if (!File.Exists(filename)) {
             _fileStream = File.Open(filename, FileMode.Create, FileAccess.ReadWrite);
             _fileStream.Write("VM"u8 );
 
             var empty = new byte[size];
-            for (var i = 0; i < size; i++)
-                empty[i] = 0;
-            
             _fileStream.Write(empty);
         }
         else {
