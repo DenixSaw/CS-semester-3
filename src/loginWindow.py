@@ -6,6 +6,7 @@ from PIL import Image, ImageTk
 from menuWindow import MenuWindow
 import tomllib
 
+# Создание окна средствами Tkinter.
 window = Tk()
 window.geometry('550x350')
 window.title("Вход")
@@ -13,7 +14,7 @@ window.configure(bg='#b9d1ea')
 window.minsize(550, 350)
 window.resizable(False, False)
 
-# ------- welcome label region --------------
+# Надпись - название приложения.
 welcome = Label(window,
                 text="АИС Отдел Кадров",
                 background="#fffacd",
@@ -26,9 +27,7 @@ welcome.pack(fill="x",
              pady=5,
              anchor='n')
 
-# -------------------------------------------
-
-# ------------ version label region ---------
+# Надпись, информирующая о версии приложения.
 version = Label(window,
                 text='Версия ' + tomllib.load(open('pyproject.toml', 'rb'))['project']['version'],
                 background="#ffd700",
@@ -41,9 +40,7 @@ version.pack(fill="x",
              pady=(0, 5),
              anchor='n')
 
-# -------------------------------------------
-
-# -------------login form message region --------------------
+# Надпись, предлагающая ввести логин и пароль.
 formMessage = Label(window,
                     text="Введите имя пользователя и пароль",
                     background="white",
@@ -55,10 +52,7 @@ formMessage.pack(fill="x",
                  padx=5,
                  anchor='n')
 
-# -----------------------------------------------------------
-
-
-# ------------ keyboard language layout message region ---------
+# Надпись на форме, информирущая о языке раскладки.
 languageMessage = Label(window,
                         background=window['bg'],
                         font=12)
@@ -67,6 +61,7 @@ languageMessage.pack(anchor="sw",
                      pady=0)
 
 
+# Функция, которая каждые 100 милисекунд проверяет раскладку клавиатуры.
 def checkKeyBoardLayout():
     keyboardLayoutKey = win32api.GetKeyboardLayout()
     if keyboardLayoutKey == 68748313:
@@ -77,9 +72,7 @@ def checkKeyBoardLayout():
     window.after(100, checkKeyBoardLayout)
 
 
-# --------------------------------------------------------------
-
-# ------------ caps lock message region ---------
+# Надпись на форме, информирующая о Caps Lock.
 capsLockMessage = Label(window,
                         background=window['bg'],
                         font=12)
@@ -90,6 +83,7 @@ capsLockMessage.place(relx=0.54,
                       rely=0.92)
 
 
+# Функция, которая каждые 100 милисекунд проверяет нажат ли Caps Lock.
 def checkCapsLock():
     if win32api.GetKeyState(0x14) in (1, -127):
         capsLockMessage.config(text="Клавиша CapsLock нажата")
@@ -98,10 +92,7 @@ def checkCapsLock():
     window.after(100, checkCapsLock)
 
 
-# -----------------------------------------------
-
-
-# ------------ login field region ---------------
+# Строка логина.
 userNameDescription = Label(window,
                             text="Имя пользователя",
                             font=14,
@@ -116,9 +107,7 @@ userNameInputField.pack(pady=25,
                         padx=5,
                         anchor="e")
 
-# -----------------------------------------------
-
-# ------------ password field region ---------------
+# Строка пароля.
 passwordDescription = Label(window,
                             text="Пароль",
                             font=14,
@@ -135,28 +124,31 @@ passwordInputField.pack(pady=0,
                         anchor="e")
 
 
-# -----------------------------------------------
-
-
-# ------------ logIn button region ---------------
+# Обработчик нажатия на кнопку входа.
 def tryLogIn():
+    # Парсим данные с формы.
     username = userNameInputField.get().strip()
     password = passwordInputField.get().strip()
 
+    # Проверяем есть ли пользователь в базе.
     try:
         userData = parseUser(name=username, password=password)
     except KeyError:
         tkinter.messagebox.showerror(message="Некорректные настройки доступа")
         return
 
+    # Если есть, то ставим статус accepted.
     if userData['status'] == 'accepted':
+        # Уничтожаем окно входа.
         quit()
+        # Запускаем новое окно с меню.
         MenuWindow(userData)
     else:
         tkinter.messagebox.showerror(title='Ошибка', message='Отказанно в доступе\n'
                                                              'Неверное имя пользователя или пароль!')
 
 
+# Кнопка входа.
 logInButton = Button(window,
                      text="Вход",
                      font=3,
@@ -164,10 +156,7 @@ logInButton = Button(window,
                      command=tryLogIn)
 logInButton.place(x=35, y=250)
 
-# -----------------------------------------------
-
-
-# ------------ cancel button region ---------------
+# Кнопка отмены.
 cancelButton = Button(window,
                       text="Отмена",
                       font=3,
@@ -175,9 +164,7 @@ cancelButton = Button(window,
                       command=lambda: window.destroy())
 cancelButton.place(x=370, y=250)
 
-# -----------------------------------------------
-
-# ------- logo image region ----------------------
+# Логотип - ключики.
 image = Image.open("./logo.png")
 photo = ImageTk.PhotoImage(image, 13)
 logo = Label(window,
@@ -188,18 +175,24 @@ logo = Label(window,
 logo.place(x=10, y=5)
 
 
-# ------------------------------------------
-
+# Функция, которая убивает все процессы, отслеживающие изменения в окне и закрывает окно.
+# Такие как сменя языка и нажатие на клавишу Caps Lock.
 def quit():
+    # Идем в цикле, пока не завершим исполнение всех процессов.
     for after_id in window.tk.eval('after info').split():
         window.after_cancel(after_id)
+    # Затем убиваем окно.
     window.destroy()
 
 
 # Точка входа - запуск окна входа.
 def start():
+    # Запускаем процессы, которые будут следить за изменением состояния клавишы Caps Lock и языком раскладки.
     checkKeyBoardLayout()
     checkCapsLock()
 
+    # Подвязываем функцию quit, как убивающую окно входа.
     window.protocol('WM_DELETE_WINDOW', quit)
+
+    # Запускаем окно входа.
     window.mainloop()
