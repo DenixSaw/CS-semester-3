@@ -1,21 +1,26 @@
 ﻿namespace CS_semester_3;
 
+// Точка входа в программу.
 internal static class Program 
 {
+    // Тестирующая функция.
     private static void Main() 
     {
-        using var vm = new VirtualMemory(21, "./data.bin", 4, 4);
+        using var vm = new VirtualMemory(10000);
         
-        if (!vm.SetElement(4, 42))
-            Console.WriteLine("Не удалось записать элемент");
+        if (!vm.SetElement(0, 255))
+            Console.WriteLine("Не удалось записать элемент 0");
         
-        if (!vm.SetElement(0, 256))
-            Console.WriteLine("Не удалось записать элемент");
+        if (!vm.SetElement(1024, 123))
+            Console.WriteLine("Не удалось записать элемент 1024");
         
-        if (!vm.SetElement(20, int.MaxValue))
-            Console.WriteLine("Не удалось записать элемент");
+        if (!vm.SetElement(2048, 18))
+            Console.WriteLine("Не удалось записать элемент 2048");
         
-        var getStatus = vm.GetElement(0, out var n);
-        Console.WriteLine(getStatus ? n : "Не удалось получить элемнт");
+        var getStatus = vm.GetElement(1024, out var n);
+        Console.WriteLine(getStatus ? n : "Не удалось получить элемeнт");
+        
+        var status = vm.GetElement(2048, out var k);
+        Console.WriteLine(status ? k : "Не удалось получить элемeнт");
     }
 }
